@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisis Sentimen Komentar</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center my-4">📊 Analisis Sentimen Komentar</h1>
+        <hr>
+
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="metric-card">
+                    <h3>Total Komentar</h3>
+                    <p class="metric-value">{{ stats.total_comments }}</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="metric-card">
+                    <h3>Komentar Positif</h3>
+                    <p class="metric-value">{{ stats.positive_comments }}</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="metric-card">
+                    <h3>Komentar Negatif</h3>
+                    <p class="metric-value">{{ stats.negative_comments }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="chart-card">
+                    <h3>📈 Distribusi Sentimen Komentar</h3>
+                    <img src="{{ url_for('static', filename='images/pie_chart.png') }}" alt="Pie Chart" class="img-fluid">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-card">
+                    <h3>📊 Jumlah Komentar per Kategori</h3>
+                    <img src="{{ url_for('static', filename='images/bar_chart.png') }}" alt="Bar Chart" class="img-fluid">
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="wordcloud-card">
+                    <h3>🌟 Word Cloud Positif</h3>
+                    <img src="{{ url_for('static', filename='images/wordcloud_positif.png') }}" alt="Word Cloud Positif" class="img-fluid">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="wordcloud-card">
+                    <h3>🌟 Word Cloud Netral</h3>
+                    <img src="{{ url_for('static', filename='images/wordcloud_netral.png') }}" alt="Word Cloud Netral" class="img-fluid">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="wordcloud-card">
+                    <h3>🌟 Word Cloud Negatif</h3>
+                    <img src="{{ url_for('static', filename='images/wordcloud_negatif.png') }}" alt="Word Cloud Negatif" class="img-fluid">
+                </div>
+            </div>
+        </div>
+
+        <!-- Comments Table Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="analysis-card">
+                    <h3>📋 Daftar Komentar</h3>
+                    <div class="table-responsive">
+                        {{ stats.comments_table | safe }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="analysis-card">
+                    <h3>🔍 Klasifikasi Komentar Baru</h3>
+                    <div class="mb-3">
+                        <textarea id="comment-input" class="form-control" rows="4" placeholder="Masukkan komentar baru..."></textarea>
+                    </div>
+                    <button id="analyze-btn" class="btn btn-primary">Analisis Sentimen</button>
+                    <div id="analysis-result" class="mt-3" style="display: none;">
+                        <h4>Hasil Analisis</h4>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="metric-card">
+                                    <h5>Panjang Komentar</h5>
+                                    <p class="metric-value" id="comment-length">0</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="metric-card">
+                                    <h5>Jumlah Kata</h5>
+                                    <p class="metric-value" id="word-count">0</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="metric-card">
+                                    <h5>Jumlah Emoji</h5>
+                                    <p class="metric-value" id="emoji-count">0</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="sentiment-result mt-3">
+                            <h5>Sentimen: <span id="sentiment-text"></span></h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('analyze-btn').addEventListener('click', function() {
+            const comment = document.getElementById('comment-input').value;
+            if (!comment) {
+                alert('Silakan masukkan komentar terlebih dahulu.');
+                return;
+            }
+
+            fetch('/analyze', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ comment: comment })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('analysis-result').style.display = 'block';
+                document.getElementById('comment-length').textContent = data.comment_length;
+                document.getElementById('word-count').textContent = data.word_count;
+                document.getElementById('emoji-count').textContent = data.emoji_count;
+                
+                const sentimentText = document.getElementById('sentiment-text');
+                sentimentText.textContent = data.sentiment;
+                sentimentText.className = '';
+                
+                if (data.sentiment === 'Positif') {
+                    sentimentText.classList.add('text-success');
+                    sentimentText.textContent += ' 😊';
+                } else if (data.sentiment === 'Negatif') {
+                    sentimentText.classList.add('text-danger');
+                    sentimentText.textContent += ' 😔';
+                } else {
+                    sentimentText.classList.add('text-info');
+                    sentimentText.textContent += ' 😐';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat menganalisis komentar.');
+            });
+        });
+    </script>
+</body>
+</html> 

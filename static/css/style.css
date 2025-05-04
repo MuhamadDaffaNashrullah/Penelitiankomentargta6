@@ -1,0 +1,195 @@
+body {
+    background-image: url('../images/11372686.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    min-height: 100vh;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    color: #fff;
+    overflow-x: hidden;
+}
+
+.container {
+    background-color: rgba(0, 0, 0, 0.8);
+    padding: 2rem;
+    border-radius: 8px;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
+h1, h2, h3, h4, h5 {
+    color: #000000;
+    font-weight: 700;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+h1:first-child {
+    color: #ffffff;
+}
+
+.metric-card {
+    background-color: rgba(252,175,23,255);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.metric-value {
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 0;
+    color: #fff;
+}
+
+.chart-card, .wordcloud-card, .analysis-card {
+    background-color: rgb(119,126,170,255);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+/* Table Styling */
+.table {
+    width: 100%;
+    margin-bottom: 0;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    overflow: hidden;
+    table-layout: fixed;
+    font-size: 0.9rem;
+}
+
+.table th {
+    background-color: rgba(252,175,23,255);
+    color: #fff;
+    font-weight: 600;
+    padding: 8px;
+    border-bottom: 2px solid #dee2e6;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.table td {
+    padding: 8px;
+    vertical-align: middle;
+    border-bottom: 1px solid #dee2e6;
+    color: #333;
+    word-wrap: break-word;
+}
+
+.table td:first-child {
+    width: 70%;
+}
+
+.table td:last-child {
+    width: 30%;
+    text-align: center;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(255, 255, 255, 0.7);
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(252,175,23,0.2);
+}
+
+.table-bordered {
+    border: 1px solid #dee2e6;
+}
+
+.table-bordered th,
+.table-bordered td {
+    border: 1px solid #dee2e6;
+}
+
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin: 1rem 0;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Custom scrollbar for table */
+.table-responsive::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: rgba(252,175,23,0.5);
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: rgba(252,175,23,0.7);
+}
+
+.btn-primary {
+    background: #e60000;
+    color: #fff;
+    border: none;
+    border-radius: 0;
+    padding: 0.5rem 1.5rem;
+    font-weight: bold;
+    transition: 0.2s;
+    box-shadow: 0 2px 8px 0 rgba(230,0,0,0.15);
+}
+
+.btn-primary:hover {
+    background: #ff0000;
+    color: #fff;
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 4px 16px 0 rgba(230,0,0,0.18);
+}
+
+.form-control {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+.form-control:focus {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: #e60000;
+    color: #fff;
+    box-shadow: 0 0 0 0.25rem rgba(230, 0, 0, 0.25);
+}
+
+.sentiment-result {
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.text-success {
+    color: #28a745 !important;
+}
+
+.text-danger {
+    color: #dc3545 !important;
+}
+
+.text-info {
+    color: #17a2b8 !important;
+}
+
+hr {
+    border-color: #e60000;
+    opacity: 0.5;
+    margin: 2rem 0;
+} 
