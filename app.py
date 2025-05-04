@@ -10,8 +10,10 @@ from textblob import TextBlob
 import re
 import base64
 import io
+from config import ProductionConfig
 
 app = Flask(__name__)
+app.config.from_object(ProductionConfig)
 
 # Fungsi-fungsi analisis sentimen
 def contains_emoji(text):
