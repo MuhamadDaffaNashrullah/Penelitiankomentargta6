@@ -11,9 +11,22 @@ import re
 import base64
 import io
 from config import ProductionConfig
+import logging
+from logging.handlers import RotatingFileHandler
 
 app = Flask(__name__)
 app.config.from_object(ProductionConfig)
+
+# Configure logging
+if not app.debug:
+    file_handler = RotatingFileHandler('app.log', maxBytes=10240, backupCount=10)
+    file_handler.setFormatter(logging.Formatter(
+        '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
+    ))
+    file_handler.setLevel(logging.INFO)
+    app.logger.addHandler(file_handler)
+    app.logger.setLevel(logging.INFO)
+    app.logger.info('Application startup')
 
 # Fungsi-fungsi analisis sentimen
 def contains_emoji(text):
@@ -80,35 +93,30 @@ def get_sentiment(text):
 
 def generate_visualizations():
     try:
+        # Get the absolute path to the data file
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        data_path = os.path.join(base_dir, 'komentar_dengan_sentimen.csv')
+        
+        # Create static/images directory if it doesn't exist
+        static_dir = os.path.join(base_dir, 'static', 'images')
+        os.makedirs(static_dir, exist_ok=True)
+        
         # Read data with proper encoding and error handling
         try:
-            df = pd.read_csv('komentar_dengan_sentimen.csv', encoding='utf-8')
+            df = pd.read_csv(data_path, encoding='utf-8')
         except UnicodeDecodeError:
-            df = pd.read_csv('komentar_dengan_sentimen.csv', encoding='latin1')
+            df = pd.read_csv(data_path, encoding='latin1')
         
-        # Print initial data info
+        # Print initial data info for debugging
+        print(f"\nData file path: {data_path}")
         print("\nInitial DataFrame Info:")
         print(df.info())
         print("\nInitial DataFrame Shape:", df.shape)
-        print("\nFirst few rows:")
-        print(df.head())
         
         # Clean the data
-        # Remove any duplicate columns and keep only the first two columns
         df = df.iloc[:, :2]
         df.columns = ['komentar', 'sentimen']
-        
-        # Remove any rows with missing values
         df = df.dropna()
-        
-        # Print cleaned data info
-        print("\nCleaned DataFrame Info:")
-        print(df.info())
-        print("\nCleaned DataFrame Shape:", df.shape)
-        print("\nTotal rows after cleaning:", len(df))
-        
-        # Create images directory if it doesn't exist
-        os.makedirs('static/images', exist_ok=True)
         
         # Count total comments and comments by sentiment
         total_comments = len(df)
@@ -127,7 +135,7 @@ def generate_visualizations():
         plt.pie(sentimen_counts, labels=sentimen_counts.index, autopct='%1.1f%%', startangle=90)
         plt.title('Distribusi Sentimen Komentar')
         plt.axis('equal')
-        plt.savefig('static/images/pie_chart.png', transparent=True, bbox_inches='tight', dpi=100)
+        plt.savefig(os.path.join(static_dir, 'pie_chart.png'), transparent=True, bbox_inches='tight', dpi=100)
         plt.close()
         
         # Generate bar chart
@@ -136,7 +144,7 @@ def generate_visualizations():
         plt.title('Jumlah Komentar per Kategori Sentimen')
         plt.xlabel('Sentimen')
         plt.ylabel('Jumlah Komentar')
-        plt.savefig('static/images/bar_chart.png', transparent=True, bbox_inches='tight', dpi=100)
+        plt.savefig(os.path.join(static_dir, 'bar_chart.png'), transparent=True, bbox_inches='tight', dpi=100)
         plt.close()
         
         # Generate word clouds
@@ -146,7 +154,7 @@ def generate_visualizations():
             plt.figure(figsize=(4, 3), facecolor='none')
             plt.imshow(wordcloud, interpolation='bilinear')
             plt.axis('off')
-            plt.savefig(f'static/images/wordcloud_{sentiment.lower()}.png', transparent=True, bbox_inches='tight', dpi=100)
+            plt.savefig(os.path.join(static_dir, f'wordcloud_{sentiment.lower()}.png'), transparent=True, bbox_inches='tight', dpi=100)
             plt.close()
         
         # Convert DataFrame to HTML table with styling
@@ -172,16 +180,13 @@ def generate_visualizations():
             'comments_table': comments_table
         }
     except Exception as e:
-        print(f"Error generating visualizations: {str(e)}")
-        print(f"Error details: {str(e.__class__.__name__)}")
-        import traceback
-        print(traceback.format_exc())
+        print(f"Error in generate_visualizations: {str(e)}")
         return {
             'total_comments': 0,
             'positive_comments': 0,
             'negative_comments': 0,
             'neutral_comments': 0,
-            'comments_table': ''
+            'comments_table': '<p>Error loading data. Please check the logs.</p>'
         }
 
 @app.route('/')
