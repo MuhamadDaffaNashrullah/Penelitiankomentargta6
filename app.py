@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_from_directory
 import pandas as pd
 import matplotlib
 matplotlib.use('Agg')  # Set the backend to Agg before importing pyplot
@@ -27,6 +27,11 @@ if not app.debug:
     app.logger.addHandler(file_handler)
     app.logger.setLevel(logging.INFO)
     app.logger.info('Application startup')
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                             'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 # Fungsi-fungsi analisis sentimen
 def contains_emoji(text):
@@ -108,29 +113,16 @@ def generate_visualizations():
             df = pd.read_csv(data_path, encoding='latin1')
         
         # Print initial data info for debugging
-        print(f"\nData file path: {data_path}")
-        print("\nInitial DataFrame Info:")
-        print(df.info())
-        print("\nInitial DataFrame Shape:", df.shape)
+        app.logger.info(f"Data file path: {data_path}")
+        app.logger.info(f"Static directory: {static_dir}")
         
         # Clean the data
         df = df.iloc[:, :2]
         df.columns = ['komentar', 'sentimen']
         df = df.dropna()
         
-        # Count total comments and comments by sentiment
-        total_comments = len(df)
-        positive_comments = len(df[df['sentimen'] == 'Positif'])
-        negative_comments = len(df[df['sentimen'] == 'Negatif'])
-        neutral_comments = len(df[df['sentimen'] == 'Netral'])
-        
-        print(f"\nTotal comments: {total_comments}")
-        print(f"Positive comments: {positive_comments}")
-        print(f"Negative comments: {negative_comments}")
-        print(f"Neutral comments: {neutral_comments}")
-        
-        # Generate pie chart
-        plt.figure(figsize=(8, 6), facecolor='none')
+        # Generate visualizations
+        plt.figure(figsize=(8, 6))
         sentimen_counts = df['sentimen'].value_counts()
         plt.pie(sentimen_counts, labels=sentimen_counts.index, autopct='%1.1f%%', startangle=90)
         plt.title('Distribusi Sentimen Komentar')
@@ -138,8 +130,7 @@ def generate_visualizations():
         plt.savefig(os.path.join(static_dir, 'pie_chart.png'), transparent=True, bbox_inches='tight', dpi=100)
         plt.close()
         
-        # Generate bar chart
-        plt.figure(figsize=(8, 6), facecolor='none')
+        plt.figure(figsize=(8, 6))
         sns.countplot(data=df, x='sentimen', order=['Positif', 'Netral', 'Negatif'])
         plt.title('Jumlah Komentar per Kategori Sentimen')
         plt.xlabel('Sentimen')
@@ -147,40 +138,24 @@ def generate_visualizations():
         plt.savefig(os.path.join(static_dir, 'bar_chart.png'), transparent=True, bbox_inches='tight', dpi=100)
         plt.close()
         
-        # Generate word clouds
         for sentiment in ['Positif', 'Netral', 'Negatif']:
             text = ' '.join(df[df['sentimen'] == sentiment]['komentar'].dropna())
             wordcloud = WordCloud(width=400, height=300, background_color=None, mode='RGBA').generate(text)
-            plt.figure(figsize=(4, 3), facecolor='none')
+            plt.figure(figsize=(4, 3))
             plt.imshow(wordcloud, interpolation='bilinear')
             plt.axis('off')
             plt.savefig(os.path.join(static_dir, f'wordcloud_{sentiment.lower()}.png'), transparent=True, bbox_inches='tight', dpi=100)
             plt.close()
         
-        # Convert DataFrame to HTML table with styling
-        comments_table = df.to_html(
-            classes='table table-striped table-bordered table-hover',
-            index=False,
-            escape=False,
-            justify='left',
-            table_id='comments-table',
-            render_links=True,
-            border=0,
-            formatters={
-                'komentar': lambda x: f'<div style="max-width: 500px; word-wrap: break-word;">{x}</div>',
-                'sentimen': lambda x: f'<div style="text-align: center;">{x}</div>'
-            }
-        )
-        
         return {
-            'total_comments': total_comments,
-            'positive_comments': positive_comments,
-            'negative_comments': negative_comments,
-            'neutral_comments': neutral_comments,
-            'comments_table': comments_table
+            'total_comments': len(df),
+            'positive_comments': len(df[df['sentimen'] == 'Positif']),
+            'negative_comments': len(df[df['sentimen'] == 'Negatif']),
+            'neutral_comments': len(df[df['sentimen'] == 'Netral']),
+            'comments_table': df.to_html(classes='table table-striped table-bordered table-hover', index=False)
         }
     except Exception as e:
-        print(f"Error in generate_visualizations: {str(e)}")
+        app.logger.error(f"Error in generate_visualizations: {str(e)}")
         return {
             'total_comments': 0,
             'positive_comments': 0,

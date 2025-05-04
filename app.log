@@ -1,0 +1,3 @@
+2025-05-04 18:11:35,450 INFO: Application startup [in e:\Tugas Kuliah\AI\UTS\app.py:29]
+2025-05-04 18:11:38,057 INFO: Data file path: e:\Tugas Kuliah\AI\UTS\komentar_dengan_sentimen.csv [in e:\Tugas Kuliah\AI\UTS\app.py:116]
+2025-05-04 18:11:38,057 INFO: Static directory: e:\Tugas Kuliah\AI\UTS\static\images [in e:\Tugas Kuliah\AI\UTS\app.py:117]
