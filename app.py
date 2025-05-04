@@ -121,7 +121,7 @@ def generate_visualizations():
         df.columns = ['komentar', 'sentimen']
         df = df.dropna()
         
-        # Generate visualizations
+        # Generate pie chart
         plt.figure(figsize=(8, 6))
         sentimen_counts = df['sentimen'].value_counts()
         plt.pie(sentimen_counts, labels=sentimen_counts.index, autopct='%1.1f%%', startangle=90)
@@ -130,6 +130,7 @@ def generate_visualizations():
         plt.savefig(os.path.join(static_dir, 'pie_chart.png'), transparent=True, bbox_inches='tight', dpi=100)
         plt.close()
         
+        # Generate bar chart
         plt.figure(figsize=(8, 6))
         sns.countplot(data=df, x='sentimen', order=['Positif', 'Netral', 'Negatif'])
         plt.title('Jumlah Komentar per Kategori Sentimen')
@@ -138,14 +139,38 @@ def generate_visualizations():
         plt.savefig(os.path.join(static_dir, 'bar_chart.png'), transparent=True, bbox_inches='tight', dpi=100)
         plt.close()
         
+        # Generate word clouds with error handling
         for sentiment in ['Positif', 'Netral', 'Negatif']:
-            text = ' '.join(df[df['sentimen'] == sentiment]['komentar'].dropna())
-            wordcloud = WordCloud(width=400, height=300, background_color=None, mode='RGBA').generate(text)
-            plt.figure(figsize=(4, 3))
-            plt.imshow(wordcloud, interpolation='bilinear')
-            plt.axis('off')
-            plt.savefig(os.path.join(static_dir, f'wordcloud_{sentiment.lower()}.png'), transparent=True, bbox_inches='tight', dpi=100)
-            plt.close()
+            try:
+                text = ' '.join(df[df['sentimen'] == sentiment]['komentar'].dropna())
+                if text.strip():  # Only generate wordcloud if there's text
+                    wordcloud = WordCloud(
+                        width=400,
+                        height=300,
+                        background_color=None,
+                        mode='RGBA',
+                        max_words=100,
+                        min_font_size=10,
+                        max_font_size=50,
+                        random_state=42
+                    ).generate(text)
+                    
+                    plt.figure(figsize=(4, 3))
+                    plt.imshow(wordcloud, interpolation='bilinear')
+                    plt.axis('off')
+                    plt.savefig(os.path.join(static_dir, f'wordcloud_{sentiment.lower()}.png'), 
+                              transparent=True, bbox_inches='tight', dpi=100)
+                    plt.close()
+            except Exception as e:
+                app.logger.error(f"Error generating wordcloud for {sentiment}: {str(e)}")
+                # Create a placeholder image if wordcloud generation fails
+                plt.figure(figsize=(4, 3))
+                plt.text(0.5, 0.5, f'No {sentiment} comments', 
+                        horizontalalignment='center', verticalalignment='center')
+                plt.axis('off')
+                plt.savefig(os.path.join(static_dir, f'wordcloud_{sentiment.lower()}.png'),
+                          transparent=True, bbox_inches='tight', dpi=100)
+                plt.close()
         
         return {
             'total_comments': len(df),
